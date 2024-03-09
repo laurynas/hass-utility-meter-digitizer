@@ -13,4 +13,6 @@ Add sensors to confguration.yaml
 sensor:
   - platform: utility_meter_reader
     entity: camera.your_meter_camera_entity
+    decimals: 3
+    name: "Watermeter"
 ```

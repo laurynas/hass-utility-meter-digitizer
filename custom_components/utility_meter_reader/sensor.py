@@ -12,25 +12,21 @@ def setup_platform(
     add_entities: AddEntitiesCallback,
     discovery_info: DiscoveryInfoType | None = None
 ) -> None:
-    camera_entity = config.get("entity")
-  
-    if not camera_entity:
-      hass.components.persistent_notification.create(
-          "Error", "Camera entity not specified for utility_meter_reader."
-      )
+    if not config.get("entity"):
+      hass.components.persistent_notification.create("Error", "Camera entity not specified for utility_meter_reader.")
       return False
 
-    add_entities([UtilityMeterReaderSensor(hass, camera_entity)])
+    add_entities([UtilityMeterReaderSensor(hass, config)])
 
 class UtilityMeterReaderSensor(SensorEntity):
-    _attr_name = "Watermeter"
-    _attr_native_unit_of_measurement = UnitOfVolume.CUBIC_METERS
-    _attr_device_class = SensorDeviceClass.WATER
-    _attr_state_class = SensorStateClass.TOTAL_INCREASING
-    
-    def __init__(self, hass, camera_entity):
+    def __init__(self, hass, config):
         self.hass = hass
-        self._camera_entity = camera_entity
+        self._camera_entity = config.get("entity")
+        self._decimals = config.get("decimals", 0)
+        self._attr_name = config.get("name", "Watermeter")
+        self._attr_device_class = config.get("device_class", SensorDeviceClass.WATER)
+        self._attr_state_class = config.get("state_class", SensorStateClass.TOTAL_INCREASING)
+        self._attr_native_unit_of_measurement = config.get("unit_of_measurement", UnitOfVolume.CUBIC_METERS)
 
     async def async_update(self) -> None:
         image = await async_get_image(self.hass, self._camera_entity)
@@ -38,4 +34,4 @@ class UtilityMeterReaderSensor(SensorEntity):
         response = await session.post("http://digitizer:8000/detect", data=image.content)
         result = await response.text()
 
-        self._attr_native_value = float(result) / 1000
+        self._attr_native_value = float(result) / 10 ** self._decimals
