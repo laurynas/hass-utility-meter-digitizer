@@ -5,6 +5,19 @@ from homeassistant.helpers.entity_platform import AddEntitiesCallback
 from homeassistant.helpers.typing import ConfigType, DiscoveryInfoType
 from homeassistant.components.camera import async_get_image
 from homeassistant.helpers.aiohttp_client import async_get_clientsession
+from homeassistant.helpers.config_validation import PLATFORM_SCHEMA
+import homeassistant.helpers.config_validation as cv
+import voluptuous as vol
+
+PLATFORM_SCHEMA = PLATFORM_SCHEMA.extend({
+    vol.Required("entity"): cv.entity_id,
+    vol.Optional("decimals", default=0): int,
+    vol.Optional("unique_id"): cv.string,
+    vol.Optional("name"): cv.string,
+    vol.Optional("device_class"): cv.string,
+    vol.Optional("state_class"): cv.string,
+    vol.Optional("unit_of_measurement"): cv.string,
+})
 
 def setup_platform(
     hass: HomeAssistant,
@@ -12,10 +25,6 @@ def setup_platform(
     add_entities: AddEntitiesCallback,
     discovery_info: DiscoveryInfoType | None = None
 ) -> None:
-    if not config.get("entity"):
-      hass.components.persistent_notification.create("Error", "Camera entity not specified for utility_meter_reader.")
-      return False
-
     add_entities([UtilityMeterReaderSensor(hass, config)])
 
 class UtilityMeterReaderSensor(SensorEntity):
@@ -23,7 +32,8 @@ class UtilityMeterReaderSensor(SensorEntity):
         self.hass = hass
         self._camera_entity = config.get("entity")
         self._decimals = config.get("decimals", 0)
-        self._attr_name = config.get("name", "Watermeter")
+        self._attr_unique_id = config.get("unique_id")
+        self._attr_name = config.get("name")
         self._attr_device_class = config.get("device_class", SensorDeviceClass.WATER)
         self._attr_state_class = config.get("state_class", SensorStateClass.TOTAL_INCREASING)
         self._attr_native_unit_of_measurement = config.get("unit_of_measurement", UnitOfVolume.CUBIC_METERS)
