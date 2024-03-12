@@ -1,4 +1,4 @@
-from homeassistant.components.sensor import (SensorDeviceClass, SensorEntity, SensorStateClass)
+from homeassistant.components.sensor import (SensorDeviceClass, RestoreSensor, SensorStateClass)
 from homeassistant.const import UnitOfVolume
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
@@ -28,7 +28,7 @@ def setup_platform(
 ) -> None:
     add_entities([UtilityMeterReaderSensor(hass, config)])
 
-class UtilityMeterReaderSensor(SensorEntity):
+class UtilityMeterReaderSensor(RestoreSensor):
     def __init__(self, hass, config):
         self.hass = hass
         self._camera_entity = config.get("entity")
@@ -39,6 +39,14 @@ class UtilityMeterReaderSensor(SensorEntity):
         self._attr_device_class = config.get("device_class", SensorDeviceClass.WATER)
         self._attr_state_class = config.get("state_class", SensorStateClass.TOTAL_INCREASING)
         self._attr_native_unit_of_measurement = config.get("unit_of_measurement", UnitOfVolume.CUBIC_METERS)
+
+    async def async_added_to_hass(self) -> None:
+        await super().async_added_to_hass()
+
+        old_state = await self.async_get_last_state()
+
+        if old_state is not None:
+            self._attr_native_value = old_state.state
 
     async def async_update(self) -> None:
         image = await async_get_image(self.hass, self._camera_entity)
