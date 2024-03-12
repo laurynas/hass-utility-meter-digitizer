@@ -17,6 +17,7 @@ PLATFORM_SCHEMA = PLATFORM_SCHEMA.extend({
     vol.Optional("device_class"): cv.string,
     vol.Optional("state_class"): cv.string,
     vol.Optional("unit_of_measurement"): cv.string,
+    vol.Optional("detector_url"): cv.url,
 })
 
 def setup_platform(
@@ -32,6 +33,7 @@ class UtilityMeterReaderSensor(SensorEntity):
         self.hass = hass
         self._camera_entity = config.get("entity")
         self._decimals = config.get("decimals", 0)
+        self._detector_url = config.get("detector_url", "http://utility-meter-reader:8000/detect")
         self._attr_unique_id = config.get("unique_id")
         self._attr_name = config.get("name")
         self._attr_device_class = config.get("device_class", SensorDeviceClass.WATER)
@@ -41,7 +43,7 @@ class UtilityMeterReaderSensor(SensorEntity):
     async def async_update(self) -> None:
         image = await async_get_image(self.hass, self._camera_entity)
         session = async_get_clientsession(self.hass)
-        response = await session.post("http://digitizer:8000/detect", data=image.content)
+        response = await session.post(self._detector_url, data=image.content)
         result = await response.text()
 
         self._attr_native_value = float(result) / 10 ** self._decimals

@@ -15,4 +15,5 @@ sensor:
     entity: camera.your_meter_camera_entity
     decimals: 3
     name: "Watermeter"
+    detector_url: http://utility-meter-reader:8000/detect
 ```
