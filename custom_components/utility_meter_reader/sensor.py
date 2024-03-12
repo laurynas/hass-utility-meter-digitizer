@@ -18,6 +18,7 @@ PLATFORM_SCHEMA = PLATFORM_SCHEMA.extend({
     vol.Optional("state_class"): cv.string,
     vol.Optional("unit_of_measurement"): cv.string,
     vol.Optional("detector_url"): cv.url,
+    vol.Optional("initial_state"): float,
 })
 
 def setup_platform(
@@ -34,6 +35,7 @@ class UtilityMeterReaderSensor(RestoreSensor):
         self._camera_entity = config.get("entity")
         self._decimals = config.get("decimals", 0)
         self._detector_url = config.get("detector_url", "http://utility-meter-reader:8000/detect")
+        self._initial_state = config.get("initial_state")
         self._attr_unique_id = config.get("unique_id")
         self._attr_name = config.get("name")
         self._attr_device_class = config.get("device_class", SensorDeviceClass.WATER)
@@ -47,6 +49,9 @@ class UtilityMeterReaderSensor(RestoreSensor):
 
         if old_state is not None:
             self._attr_native_value = old_state.state
+
+        if self._attr_native_value is None:
+            self._attr_native_value = self._initial_state
 
     async def async_update(self) -> None:
         image = await async_get_image(self.hass, self._camera_entity)
