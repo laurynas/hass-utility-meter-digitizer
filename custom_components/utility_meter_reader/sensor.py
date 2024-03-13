@@ -8,6 +8,7 @@ from homeassistant.helpers.aiohttp_client import async_get_clientsession
 from homeassistant.helpers.config_validation import PLATFORM_SCHEMA
 import homeassistant.helpers.config_validation as cv
 import voluptuous as vol
+import logging
 
 PLATFORM_SCHEMA = PLATFORM_SCHEMA.extend({
     vol.Required("entity"): cv.entity_id,
@@ -19,7 +20,10 @@ PLATFORM_SCHEMA = PLATFORM_SCHEMA.extend({
     vol.Optional("unit_of_measurement"): cv.string,
     vol.Optional("detector_url"): cv.url,
     vol.Optional("initial_state"): float,
+    vol.Optional("max_increase"): float,
 })
+
+_LOGGER = logging.getLogger(__name__)
 
 def setup_platform(
     hass: HomeAssistant,
@@ -36,6 +40,7 @@ class UtilityMeterReaderSensor(RestoreSensor):
         self._decimals = config.get("decimals", 0)
         self._detector_url = config.get("detector_url", "http://utility-meter-reader:8000/detect")
         self._initial_state = config.get("initial_state")
+        self._max_increase = config.get("max_increase")
         self._attr_unique_id = config.get("unique_id")
         self._attr_name = config.get("name")
         self._attr_device_class = config.get("device_class", SensorDeviceClass.WATER)
@@ -58,5 +63,23 @@ class UtilityMeterReaderSensor(RestoreSensor):
         session = async_get_clientsession(self.hass)
         response = await session.post(self._detector_url, data=image.content)
         result = await response.text()
+        value = float(result) / 10 ** self._decimals
 
-        self._attr_native_value = float(result) / 10 ** self._decimals
+        self.update_value(value)
+
+    def update_value(self, value):
+        old_value = float(self._attr_native_value)
+
+        if old_value is None:
+            self._attr_native_value = value
+            return
+
+        if value < old_value:
+            _LOGGER.warning(f"Invalid value: {value}. Value is lower than the previous value.")
+            return
+
+        if self._max_increase and value - old_value > self._max_increase:
+            _LOGGER.warning(f"Invalid value: {value}. Value increase exceeds the maximum allowed increase.")
+            return
+
+        self._attr_native_value = value
