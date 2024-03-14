@@ -18,7 +18,7 @@ PLATFORM_SCHEMA = PLATFORM_SCHEMA.extend({
     vol.Optional("device_class"): cv.string,
     vol.Optional("state_class"): cv.string,
     vol.Optional("unit_of_measurement"): cv.string,
-    vol.Optional("detector_url"): cv.url,
+    vol.Optional("digitizer_url"): cv.url,
     vol.Optional("initial_state"): float,
     vol.Optional("max_increase"): float,
 })
@@ -31,14 +31,14 @@ def setup_platform(
     add_entities: AddEntitiesCallback,
     discovery_info: DiscoveryInfoType | None = None
 ) -> None:
-    add_entities([UtilityMeterReaderSensor(hass, config)])
+    add_entities([UtilityMeterDigitizerSensor(hass, config)])
 
-class UtilityMeterReaderSensor(RestoreSensor):
+class UtilityMeterDigitizerSensor(RestoreSensor):
     def __init__(self, hass, config):
         self.hass = hass
         self._camera_entity = config.get("entity")
         self._decimals = config.get("decimals", 0)
-        self._detector_url = config.get("detector_url", "http://utility-meter-reader:8000/detect")
+        self._digitizer_url = config.get("digitizer_url", "http://utility-meter-digitizer:8000/digitize")
         self._initial_state = config.get("initial_state")
         self._max_increase = config.get("max_increase", float("inf"))
         self._attr_unique_id = config.get("unique_id")
@@ -62,7 +62,7 @@ class UtilityMeterReaderSensor(RestoreSensor):
     async def async_update(self) -> None:
         image = await async_get_image(self.hass, self._camera_entity)
         session = async_get_clientsession(self.hass)
-        response = await session.post(self._detector_url, data=image.content)
+        response = await session.post(self._digitizer_url, data=image.content)
         result = await response.text()
         value = float(result) / 10 ** self._decimals
 

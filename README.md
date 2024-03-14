@@ -1,19 +1,19 @@
-# Utility Meter Reader platform integration for Home Assistant
+# Utility Meter Digitizer platform integration for Home Assistant
 
-Provides integration with utility meter reader webservice:
-https://github.com/laurynas/utility-meter-reader
+Provides integration with utility meter digitizer webservice:
+https://github.com/laurynas/utility-meter-digitizer
 
 ## Installation
 
-Copy `custom_components/utility-meter-reader` to your homeassistant `config/` folder.
+Copy `custom_components/utility-meter-digitizer` to your homeassistant `config/` folder.
 
 Add sensors to confguration.yaml
 
 ```yaml
 sensor:
-  - platform: utility_meter_reader
+  - platform: utility_meter_digitizer
     entity: camera.your_meter_camera_entity
     decimals: 3
     name: "Watermeter"
-    detector_url: http://utility-meter-reader:8000/detect
+    digitizer_url: http://utility-meter-digitizer:8000/digitize
 ```

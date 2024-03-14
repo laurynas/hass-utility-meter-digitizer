@@ -1,6 +1,6 @@
 {
-    "domain": "utility_meter_reader",
-    "name": "Utility Meter Reader",
+    "domain": "utility_meter_digitizer",
+    "name": "Utility Meter Digitizer",
     "codeowners": ["Laurynas Butkus"],
     "dependencies": [],
     "documentation": "",
