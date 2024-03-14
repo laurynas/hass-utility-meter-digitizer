@@ -1,7 +1,6 @@
 # Utility Meter Digitizer for Home Assistant
 
-Provides integration with utility meter digitizer webservice:
-https://github.com/laurynas/utility-meter-digitizer
+Provides integration with [utility meter digitizer webservice](https://github.com/laurynas/utility-meter-digitizer).
 
 ## Installation
 
