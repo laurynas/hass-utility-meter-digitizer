@@ -17,3 +17,10 @@ sensor:
     name: "Watermeter"
     digitizer_url: http://utility-meter-digitizer:8000/digitize
 ```
+
+### Sensor attributes
+
+* `digitizer_url` - the url of the digitizer which accepts image and returns the number
+* `decimals` - (optional, int) number of decimal places
+* `max_increase` - (optional, float) maximum increase between readings. Can be used to eliminate wrong readings.
+* `initial_state` - (optional, float) number to start from
