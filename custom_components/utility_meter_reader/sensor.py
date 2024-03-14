@@ -40,7 +40,7 @@ class UtilityMeterReaderSensor(RestoreSensor):
         self._decimals = config.get("decimals", 0)
         self._detector_url = config.get("detector_url", "http://utility-meter-reader:8000/detect")
         self._initial_state = config.get("initial_state")
-        self._max_increase = config.get("max_increase")
+        self._max_increase = config.get("max_increase", float("inf"))
         self._attr_unique_id = config.get("unique_id")
         self._attr_name = config.get("name")
         self._attr_device_class = config.get("device_class", SensorDeviceClass.WATER)
@@ -79,7 +79,7 @@ class UtilityMeterReaderSensor(RestoreSensor):
             _LOGGER.warning(f"Invalid value: {value}. Value is lower than the previous value.")
             return
 
-        if self._max_increase and value - old_value > self._max_increase:
+        if value - old_value > self._max_increase:
             _LOGGER.warning(f"Invalid value: {value}. Value increase exceeds the maximum allowed increase.")
             return
 
