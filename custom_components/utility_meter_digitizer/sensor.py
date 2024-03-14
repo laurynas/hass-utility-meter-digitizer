@@ -63,6 +63,11 @@ class UtilityMeterDigitizerSensor(RestoreSensor):
         image = await async_get_image(self.hass, self._camera_entity)
         session = async_get_clientsession(self.hass)
         response = await session.post(self._digitizer_url, data=image.content)
+
+        if response.status != 200:
+            _LOGGER.warning(f"Failed to digitize image. Response: {response.status}")
+            return
+
         result = await response.text()
         value = float(result) / 10 ** self._decimals
 
