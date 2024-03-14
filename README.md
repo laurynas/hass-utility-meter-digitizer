@@ -1,4 +1,4 @@
-# Utility Meter Digitizer platform integration for Home Assistant
+# Utility Meter Digitizer for Home Assistant
 
 Provides integration with utility meter digitizer webservice:
 https://github.com/laurynas/utility-meter-digitizer
@@ -9,7 +9,7 @@ https://github.com/laurynas/utility-meter-digitizer
 
 2. Add sensors to your home assistant confguration.yaml
 
-### Sensor example:
+### Sensor example
 ```yaml
 sensor:
   - platform: utility_meter_digitizer
