@@ -1,5 +1,5 @@
 from homeassistant.components.sensor import (SensorDeviceClass, RestoreSensor, SensorStateClass)
-from homeassistant.const import UnitOfVolume
+from homeassistant.const import UnitOfVolume, STATE_UNKNOWN
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
 from homeassistant.helpers.typing import ConfigType, DiscoveryInfoType
@@ -46,13 +46,14 @@ class UtilityMeterReaderSensor(RestoreSensor):
         self._attr_device_class = config.get("device_class", SensorDeviceClass.WATER)
         self._attr_state_class = config.get("state_class", SensorStateClass.TOTAL_INCREASING)
         self._attr_native_unit_of_measurement = config.get("unit_of_measurement", UnitOfVolume.CUBIC_METERS)
+        self._reset_value = None
 
     async def async_added_to_hass(self) -> None:
         await super().async_added_to_hass()
 
         old_state = await self.async_get_last_state()
 
-        if old_state is not None:
+        if old_state is not None and old_state.state != STATE_UNKNOWN:
             self._attr_native_value = old_state.state
 
         if self._attr_native_value is None:
@@ -68,11 +69,11 @@ class UtilityMeterReaderSensor(RestoreSensor):
         self.update_value(value)
 
     def update_value(self, value):
-        old_value = float(self._attr_native_value)
-
-        if old_value is None:
+        if self._attr_native_value is None:
             self._attr_native_value = value
             return
+
+        old_value = float(self._attr_native_value)
 
         if value < old_value:
             _LOGGER.warning(f"Invalid value: {value}. Value is lower than the previous value.")
