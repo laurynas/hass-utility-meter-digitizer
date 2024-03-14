@@ -5,10 +5,11 @@ https://github.com/laurynas/utility-meter-digitizer
 
 ## Installation
 
-Copy `custom_components/utility-meter-digitizer` to your homeassistant `config/` folder.
+1. Copy `custom_components/utility-meter-digitizer` to your home assistant `config/` folder.
 
-Add sensors to confguration.yaml
+2. Add sensors to your home assistant confguration.yaml
 
+### Sensor example:
 ```yaml
 sensor:
   - platform: utility_meter_digitizer
