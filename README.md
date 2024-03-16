@@ -13,16 +13,7 @@ Provides integration with [utility meter digitizer webservice](https://github.co
 sensor:
   - platform: utility_meter_digitizer
     entity: camera.your_meter_camera_entity
-    decimals: 3
     name: "Watermeter"
-    digitizer_url: http://utility-meter-digitizer:8000/digitize
+    digitizer_url: http://utility-meter-digitizer:8000/meter/demometer?decimals=3&max_increase=0.1
 ```
 
-### Sensor attributes
-
-* `entity` - camera entity id from which the image will be read
-* `digitizer_url` - the url of the digitizer which accepts image and returns the number
-* `decimals` - (optional, int) number of decimal places
-* `max_increase` - (optional, float) maximum increase between readings. Can be used to eliminate wrong readings.
-* `initial_state` - (optional, float) number to start from
-* `scan_interval` - (optional, int) reading interval in seconds, default 30

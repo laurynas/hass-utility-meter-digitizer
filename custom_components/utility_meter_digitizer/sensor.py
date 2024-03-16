@@ -9,18 +9,16 @@ from homeassistant.helpers.config_validation import PLATFORM_SCHEMA
 import homeassistant.helpers.config_validation as cv
 import voluptuous as vol
 import logging
+import json
 
 PLATFORM_SCHEMA = PLATFORM_SCHEMA.extend({
     vol.Required("entity"): cv.entity_id,
-    vol.Optional("decimals", default=0): int,
     vol.Optional("unique_id"): cv.string,
     vol.Optional("name"): cv.string,
     vol.Optional("device_class"): cv.string,
     vol.Optional("state_class"): cv.string,
     vol.Optional("unit_of_measurement"): cv.string,
     vol.Optional("digitizer_url"): cv.url,
-    vol.Optional("initial_state"): float,
-    vol.Optional("max_increase"): float,
 })
 
 _LOGGER = logging.getLogger(__name__)
@@ -37,16 +35,12 @@ class UtilityMeterDigitizerSensor(RestoreSensor):
     def __init__(self, hass, config):
         self.hass = hass
         self._camera_entity = config.get("entity")
-        self._decimals = config.get("decimals", 0)
-        self._digitizer_url = config.get("digitizer_url", "http://utility-meter-digitizer:8000/digitize")
-        self._initial_state = config.get("initial_state")
-        self._max_increase = config.get("max_increase", float("inf"))
+        self._digitizer_url = config.get("digitizer_url")
         self._attr_unique_id = config.get("unique_id")
         self._attr_name = config.get("name")
         self._attr_device_class = config.get("device_class", SensorDeviceClass.WATER)
         self._attr_state_class = config.get("state_class", SensorStateClass.TOTAL_INCREASING)
         self._attr_native_unit_of_measurement = config.get("unit_of_measurement", UnitOfVolume.CUBIC_METERS)
-        self._reset_value = None
 
     async def async_added_to_hass(self) -> None:
         await super().async_added_to_hass()
@@ -69,23 +63,6 @@ class UtilityMeterDigitizerSensor(RestoreSensor):
             return
 
         result = await response.text()
-        value = float(result) / 10 ** self._decimals
+        data = json.loads(result)
 
-        self.update_value(value)
-
-    def update_value(self, value):
-        if self._attr_native_value is None:
-            self._attr_native_value = value
-            return
-
-        old_value = float(self._attr_native_value)
-
-        if value < old_value:
-            _LOGGER.warning(f"Invalid value: {value}. Value is lower than the previous value.")
-            return
-
-        if value - old_value > self._max_increase:
-            _LOGGER.warning(f"Invalid value: {value}. Value increase exceeds the maximum allowed increase.")
-            return
-
-        self._attr_native_value = value
+        self._attr_native_value = data['value']
