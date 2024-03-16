@@ -16,4 +16,3 @@ sensor:
     name: "Watermeter"
     digitizer_url: http://utility-meter-digitizer:8000/meter/demometer?decimals=3&max_increase=0.1
 ```
-
