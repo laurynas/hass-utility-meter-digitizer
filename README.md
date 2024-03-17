@@ -15,4 +15,5 @@ sensor:
     entity: camera.your_meter_camera_entity
     name: "Watermeter"
     digitizer_url: http://utility-meter-digitizer:8000/meter/demometer?decimals=3&max_increase=0.1
+    scan_interval: 60
 ```
