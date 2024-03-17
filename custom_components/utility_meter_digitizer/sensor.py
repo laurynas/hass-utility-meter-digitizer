@@ -50,9 +50,6 @@ class UtilityMeterDigitizerSensor(RestoreSensor):
         if old_state is not None and old_state.state != STATE_UNKNOWN:
             self._attr_native_value = old_state.state
 
-        if self._attr_native_value is None:
-            self._attr_native_value = self._initial_state
-
     async def async_update(self) -> None:
         image = await async_get_image(self.hass, self._camera_entity)
         session = async_get_clientsession(self.hass)
