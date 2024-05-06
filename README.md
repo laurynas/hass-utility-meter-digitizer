@@ -227,7 +227,7 @@ script:
           HTTPClient http;
 
           http.setConnectTimeout(1000);
-          http.setTimeout(3000);
+          http.setTimeout(5000);
 
           std::string url = id(digitizer_url).state;
 
