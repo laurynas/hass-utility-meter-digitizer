@@ -90,21 +90,20 @@ light:
 ### Standalone device example
 
 This example can work as standalone device without Home Assistant integration - periodically sending pictures to the digitizer directly.
+Set digitiser url via http://watermeter-test.local
 
 ```yaml
 esphome:
-  name: test-cam
-  friendly_name: test-cam
-  includes:
-    - src/base64.hpp
+  name: watermeter-test
+  friendly_name: watermeter-test
   on_boot: 
     then:
       - lambda: |-
           id(camera).add_image_callback([](std::shared_ptr<esp32_camera::CameraImage> image) {
             if (image->was_requested_by(esp32_camera::WEB_REQUESTER)) {
-              const char* data = reinterpret_cast<char*>(image->get_data_buffer());    
-              id(image_data) = base64_encode(&data[0], image->get_data_length());
-              ESP_LOGD("main", "encoded requested image, len %d", id(image_data).length());
+              id(image_data).length = image->get_data_length();
+              id(image_data).data = image->get_data_buffer();
+              ESP_LOGD("main", "got requested image, len %d", id(image_data).length);
             }
           });
 
@@ -119,10 +118,10 @@ logger:
 # Enable Home Assistant API
 api:
   encryption:
-    key: "REPLACETHIS!!!"
+    key: "REPLACE THIS!!"
 
 ota:
-  password: "REPLACETHIS!!!"
+  password: "REPLACE THIS!!"
 
 wifi:
   ssid: !secret wifi_ssid
@@ -130,16 +129,17 @@ wifi:
 
   # Enable fallback hotspot (captive portal) in case wifi connection fails
   ap:
-    ssid: "Test-Cam Fallback Hotspot"
-    password: "REPLACETHIS!!!"
+    ssid: "Watermeter-Test Fallback"
+    password: "REPLACE THIS!!"
 
 captive_portal:
 
+# Just loading dependencies, will issue request manually via HTTPClient
 http_request:
 
 globals:
   - id: image_data
-    type: std::string
+    type: esp32_camera::CameraImageData
 
 esp32_camera:
   name: "Camera"
@@ -176,25 +176,76 @@ esp32_camera_web_server:
   - port: 8081
     mode: snapshot
 
+web_server:
+  port: 80
+
+text:
+  - platform: template
+    id: digitizer_url
+    name: "Digitizer URL"
+    optimistic: true
+    mode: text
+    restore_value: true
+
+number:
+  - platform: template
+    id: digitizer_interval
+    name: "Digitizer interval (seconds)"
+    min_value: 10
+    max_value: 3600
+    step: 10
+    initial_value: 60
+    optimistic: true
+    restore_value: true
+
 interval:
-  - interval: 10m
+  - interval: 1sec
+    then:
+      if: 
+        condition:
+          not: 
+            script.is_running: digitize
+        then: 
+          - script.execute: digitize    
+
+script:
+  - id: digitize
     then:
       - light.turn_on: 
           id: onboard_led
           transition_length: 0s
-          brightness: 70%
+          brightness: 80%
       - delay: 5s
-      - lambda: |-
-          id(camera).request_image(esp32_camera::WEB_REQUESTER);
+      - lambda: id(camera).request_image(esp32_camera::WEB_REQUESTER);
       - wait_until:
           condition:
-            lambda: return id(image_data).length() > 0;
-      - http_request.post:
-          url: http://utility-meter-digitizer:8000/meter/demometer?decimals=3&max_increase=0.1
-          body: !lambda |-
-            return "data:image/jpeg;base64," + id(image_data);
-      - lambda: id(image_data) = "";
+            lambda: return id(image_data).length > 0;
+      - lambda: |-
+          WiFiClient wifiClient;
+          WiFiClientSecure wifiClientSecure;
+          wifiClientSecure.setInsecure();
+          HTTPClient http;
+
+          http.setConnectTimeout(1000);
+          http.setTimeout(3000);
+
+          std::string url = id(digitizer_url).state;
+
+          if (url.rfind("https://", 0) == 0) {
+            http.begin(wifiClientSecure, url.c_str());
+          } else {
+            http.begin(wifiClient, url.c_str());
+          }
+
+          int http_code = http.POST(id(image_data).data, id(image_data).length);
+
+          ESP_LOGD("HTTPClient", "completed; URL: %s; Code: %d", url.c_str(), http_code);
+
+          http.end();
+      - lambda: id(image_data) = {};
       - light.turn_off: 
           id: onboard_led
           transition_length: 0s
+      - delay: !lambda |-
+          return id(digitizer_interval).state * 1000;
 ```
