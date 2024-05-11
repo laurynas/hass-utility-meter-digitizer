@@ -24,4 +24,4 @@ sensor:
 
 ## ESPHome
 
-ESP32-Cam device ESPHome [configuration examples](https://github.com/laurynas/esphome-devices/).
+ESP32-Cam device [configuration examples](https://github.com/laurynas/esphome-devices/).
