@@ -4,9 +4,16 @@ Provides integration with [utility meter digitizer webservice](https://github.co
 
 ## Installation
 
-1. Copy `custom_components/utility-meter-digitizer` to your home assistant `config/` folder.
+### Manual
+Copy `custom_components/utility-meter-digitizer` to your home assistant `config/` folder.
 
-2. Add sensors to your home assistant confguration.yaml
+### HACS
+Add repository to HACS
+Repository: `laurynas/hass-utility-meter-digitizer`
+Type: `Integration`
+
+### Sensor example
+2. Add sensors to your home assistant configuration.yaml
 
 ### Sensor example
 ```yaml
