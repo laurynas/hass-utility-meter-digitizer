@@ -19,6 +19,11 @@ sensor:
     flashlight_entity_id: light.test_cam_board_led
     flashlight_brightness: 70
     flashlight_duration: 3
+    rotation: 90
+    sharpness: 2.5
+    gamma: 0.8
+    input_black: 40
+    input_white: 220
 ```
 
 
