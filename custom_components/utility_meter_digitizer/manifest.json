@@ -2,9 +2,12 @@
     "domain": "utility_meter_digitizer",
     "name": "Utility Meter Digitizer",
     "codeowners": ["Laurynas Butkus"],
+    "issue_tracker": "https://github.com/laurynas/hass-utility-meter-digitizer/issues",
     "dependencies": [],
-    "documentation": "",
+    "documentation": "https://github.com/laurynas/hass-utility-meter-digitizer",
+    "config_flow": false,
+    "integration_type": "hub",
     "iot_class": "local_polling",
     "requirements": [],
-    "version": "0.1.0"
+    "version": "0.1.1"
 }
