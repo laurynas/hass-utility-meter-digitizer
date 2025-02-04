@@ -9,13 +9,12 @@ Copy `custom_components/utility-meter-digitizer` to your home assistant `config/
 
 ### HACS
 Add repository to HACS
-Repository: `laurynas/hass-utility-meter-digitizer`
-Type: `Integration`
+- Repository: `laurynas/hass-utility-meter-digitizer`
+- Type: `Integration`
 
 ### Sensor example
-2. Add sensors to your home assistant configuration.yaml
+Add sensors to your home assistant configuration.yaml
 
-### Sensor example
 ```yaml
 sensor:
   - platform: utility_meter_digitizer
